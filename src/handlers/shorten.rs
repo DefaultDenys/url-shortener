@@ -13,7 +13,7 @@ pub async fn shorten_handler(
     Json(body): Json<ShortenRequest>,
 ) -> Json<ShortenResponse> {
     let url_original = body.url_original;
-    let url_short = services::generate_url_short(&url_original);
+    let url_short = services::generate_url_short();
 
     let mut store = state.store.lock().unwrap();
     store.insert(url_original.clone(), url_short.clone());
