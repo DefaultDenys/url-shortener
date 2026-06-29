@@ -9,7 +9,6 @@ pub struct ShortLink {
 pub trait UrlStore {
     fn insert(&mut self, url_original: String, url_short: String);
     fn lookup(&self, url_short: &str) -> Option<String>;
-    fn count(&self) -> usize;
 }
 
 pub struct InMemoryStore {
@@ -31,9 +30,5 @@ impl UrlStore for InMemoryStore {
 
     fn lookup(&self, url_short: &str) -> Option<String> {
         self.map.get(url_short).cloned()
-    }
-
-    fn count(&self) -> usize {
-        self.map.len()
     }
 }
