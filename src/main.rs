@@ -1,4 +1,5 @@
 mod dto;
+mod entities;
 mod handlers;
 mod router;
 mod services;
@@ -6,10 +7,10 @@ mod state;
 mod store;
 mod tracing_config;
 
-use std::net::SocketAddr;
+use std::{env, net::SocketAddr};
 
+use migration::{Migrator, MigratorTrait};
 use state::AppState;
-use store::InMemoryStore;
 
 use tracing::info;
 
@@ -18,8 +19,15 @@ async fn main() {
     dotenvy::dotenv().ok();
     tracing_config::init_tracing();
 
-    let store = InMemoryStore::new();
-    let state = AppState::new(store);
+    let db = store::connect(&env::var("DATABASE_URL").unwrap())
+        .await
+        .unwrap();
+
+    Migrator::up(&db, None).await.unwrap();
+
+    let url_repository = store::UrlRepository::new(db);
+
+    let state = AppState::new(url_repository);
 
     let app = router::build_router(state);
 

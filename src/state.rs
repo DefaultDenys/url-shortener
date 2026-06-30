@@ -1,16 +1,12 @@
-use std::sync::{Arc, Mutex};
-
-use crate::InMemoryStore;
+use crate::store::UrlRepository;
 
 #[derive(Clone)]
 pub struct AppState {
-    pub store: Arc<Mutex<InMemoryStore>>,
+    pub url_repository: UrlRepository,
 }
 
 impl AppState {
-    pub fn new(store: InMemoryStore) -> Self {
-        Self {
-            store: Arc::new(Mutex::new(store)),
-        }
+    pub fn new(url_repository: UrlRepository) -> Self {
+        Self { url_repository }
     }
 }
