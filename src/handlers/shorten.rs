@@ -5,7 +5,6 @@ use crate::{
     dto::{ShortenRequest, ShortenResponse},
     services,
     state::AppState,
-    store::UrlStore,
 };
 
 pub async fn shorten_handler(
@@ -13,15 +12,28 @@ pub async fn shorten_handler(
     Json(body): Json<ShortenRequest>,
 ) -> Json<ShortenResponse> {
     let url_original = body.url_original;
+    let url_repository = state.url_repository;
+
+    let existing_url = url_repository.find_by_original_url(&url_original).await;
+
+    if let Some(url_model) = existing_url {
+        tracing::debug!(url_original = %url_model.url_original, "reused existing short url");
+        return Json(ShortenResponse {
+            url_short: url_model.url_short,
+            url_original: url_model.url_original,
+        });
+    }
+
     let url_short = services::generate_url_short();
 
-    let mut store = state.store.lock().unwrap();
-    store.insert(url_original.clone(), url_short.clone());
+    let db_result = url_repository
+        .insert(url_original, url_short)
+        .await
+        .unwrap();
 
-    info!(%url_short, %url_original, "created short url");
-
+    info!(%db_result.url_short, %db_result.url_original, "created short url");
     Json(ShortenResponse {
-        url_short,
-        url_original,
+        url_short: db_result.url_short,
+        url_original: db_result.url_original,
     })
 }
