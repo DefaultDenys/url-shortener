@@ -1,10 +1,12 @@
 # URL Shortener
 
-Rust URL shortener with Axum + Tokio. Web UI, JSON API, and redirects. In-memory store for now.
+Rust URL shortener with Axum + Tokio. Web UI, JSON API, and redirects. SQLite persistence via SeaORM.
+
+**Live:** [https://url-shortener-rust.up.railway.app/](https://url-shortener-rust.up.railway.app/)
 
 ## Stack
 
-Axum, Tokio, Serde, tracing, tower-http, dotenvy
+Axum, Tokio, SeaORM, SQLite, Serde, tracing, tower-http, dotenvy
 
 ## Run
 
@@ -46,6 +48,5 @@ RUST_LOG=url_shortener=info,tower_http=info
 
 ## Todo
 
-- Database (SQLite / Postgres)
 - Caching
 - Click statistics
