@@ -31,7 +31,7 @@ async fn main() {
 
     let app = router::build_router(state);
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
+    let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
     info!(%addr, "server listening");
 
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
