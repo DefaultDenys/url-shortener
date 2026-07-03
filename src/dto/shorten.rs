@@ -9,4 +9,5 @@ pub struct ShortenRequest {
 pub struct ShortenResponse {
     pub url_short: String,
     pub url_original: String,
+    pub click_count: i32,
 }

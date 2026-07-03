@@ -45,7 +45,7 @@
         var(--bg);
       color: var(--text);
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
       padding: 1.5rem;
     }
@@ -53,6 +53,10 @@
     main {
       width: 100%;
       max-width: 520px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      margin: auto;
     }
 
     .card {
@@ -184,6 +188,17 @@
       text-decoration: underline;
     }
 
+    .result-stats {
+      margin-top: 0.75rem;
+      font-size: 0.875rem;
+      color: var(--muted);
+    }
+
+    .result-stats strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
     .copy-btn {
       display: inline-flex;
       align-items: center;
@@ -242,8 +257,157 @@
       display: block;
     }
 
+    .my-links-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .my-links-header h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .my-links-note {
+      color: var(--muted);
+      font-size: 0.85rem;
+      line-height: 1.45;
+      margin-bottom: 1rem;
+    }
+
+    .clear-links-btn {
+      padding: 0.4rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      font-family: inherit;
+      color: var(--muted);
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .clear-links-btn:hover {
+      border-color: var(--error);
+      color: var(--error);
+    }
+
+    .my-links-empty {
+      padding: 1rem;
+      border-radius: 8px;
+      border: 1px dashed var(--border);
+      color: var(--muted);
+      font-size: 0.9rem;
+      text-align: center;
+    }
+
+    .my-links-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .my-link-item {
+      padding: 0.875rem 1rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+    }
+
+    .my-link-primary {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+
+    .my-link-primary a {
+      flex: 1;
+      font-size: 0.95rem;
+      font-weight: 600;
+      line-height: 1.45;
+      color: var(--text);
+      word-break: break-all;
+      text-decoration: none;
+    }
+
+    .my-link-primary a:hover {
+      color: var(--accent);
+      text-decoration: underline;
+    }
+
+    .my-link-short-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.6rem;
+      padding-top: 0.6rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .my-link-short-row a {
+      flex: 1;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: var(--muted);
+      word-break: break-all;
+      text-decoration: none;
+    }
+
+    .my-link-short-row a:hover {
+      color: var(--success);
+      text-decoration: underline;
+    }
+
+    .my-link-short-row .copy-btn {
+      width: 2rem;
+      height: 2rem;
+    }
+
+    .my-link-stats {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.65rem;
+    }
+
+    .my-link-stat {
+      flex: 1;
+      min-width: 0;
+      padding: 0.5rem 0.65rem;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .my-link-stat-value {
+      display: block;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.2;
+    }
+
+    .my-link-stat-label {
+      display: block;
+      margin-top: 0.15rem;
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .my-links-list[hidden],
+    .my-links-empty[hidden] {
+      display: none;
+    }
+
     footer {
-      margin-top: 1.25rem;
       text-align: center;
       font-size: 0.8rem;
       color: var(--muted);
@@ -294,20 +458,189 @@
             </svg>
           </button>
         </div>
+        <p id="click-count" class="result-stats" hidden></p>
       </div>
+    </div>
+
+    <div class="card" id="my-links-card">
+      <div class="my-links-header">
+        <h2>Links on this computer</h2>
+        <button type="button" class="clear-links-btn" id="clear-links-btn" hidden>
+          Clear list
+        </button>
+      </div>
+      <p class="my-links-note">
+        Saved in this browser only. Clearing site data or using another device will not show these links.
+      </p>
+      <p id="my-links-empty" class="my-links-empty">No links yet. Shorten a URL above to see it here.</p>
+      <ul id="my-links-list" class="my-links-list" hidden></ul>
     </div>
 
     <footer>Made by Denis Lempl</footer>
   </main>
 
   <script>
+    const STORAGE_KEY = "url-shortener:my-links";
+    const STATS_POLL_MS = 10000;
+
     const form = document.getElementById("shorten-form");
     const input = document.getElementById("url_original");
     const submitBtn = document.getElementById("submit-btn");
     const resultBox = document.getElementById("result");
     const shortLink = document.getElementById("short-link");
     const copyBtn = document.getElementById("copy-btn");
+    const clickCountEl = document.getElementById("click-count");
     const errorBox = document.getElementById("error");
+    const myLinksList = document.getElementById("my-links-list");
+    const myLinksEmpty = document.getElementById("my-links-empty");
+    const clearLinksBtn = document.getElementById("clear-links-btn");
+
+    function loadMyLinks() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveMyLinks(links) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(links));
+    }
+
+    function formatClicks(count) {
+      const clicks = count ?? 0;
+      const label = clicks === 1 ? "click" : "clicks";
+      return "<strong>" + clicks + "</strong> " + label;
+    }
+
+    function formatCreatedAt(value) {
+      if (!value) return "—";
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "—";
+      return date.toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+    }
+
+    function updateStoredLinkStats(url_short, stats) {
+      const links = loadMyLinks();
+      const index = links.findIndex((item) => item.url_short === url_short);
+      if (index === -1) return;
+
+      links[index] = {
+        ...links[index],
+        click_count: stats.click_count ?? links[index].click_count,
+        created_at: stats.created_at ?? links[index].created_at,
+      };
+      saveMyLinks(links);
+    }
+
+    function updateLinkStatsRow(item, stats) {
+      const clicksEl = item.querySelector('[data-stat="clicks"]');
+      const createdEl = item.querySelector('[data-stat="created"]');
+      if (clicksEl) clicksEl.textContent = stats.click_count ?? 0;
+      if (createdEl) createdEl.textContent = formatCreatedAt(stats.created_at);
+    }
+
+    async function fetchLinkStats(url_short) {
+      const response = await fetch("/stats/" + encodeURIComponent(url_short));
+      if (!response.ok) return null;
+      return response.json();
+    }
+
+    async function refreshAllLinkStats() {
+      const items = myLinksList.querySelectorAll(".my-link-item[data-url-short]");
+      await Promise.all(
+        Array.from(items).map(async (item) => {
+          const url_short = item.dataset.urlShort;
+          try {
+            const stats = await fetchLinkStats(url_short);
+            if (!stats) return;
+            updateLinkStatsRow(item, stats);
+            updateStoredLinkStats(url_short, stats);
+          } catch (err) {
+            console.error("Failed to load stats for", url_short, err);
+          }
+        })
+      );
+    }
+
+    let statsPollTimer = null;
+
+    function startStatsPolling() {
+      if (statsPollTimer) clearInterval(statsPollTimer);
+      statsPollTimer = setInterval(() => {
+        if (!myLinksList.hidden) refreshAllLinkStats();
+      }, STATS_POLL_MS);
+    }
+
+    function upsertMyLink(entry) {
+      const links = loadMyLinks().filter((item) => item.url_short !== entry.url_short);
+      links.unshift({
+        url_short: entry.url_short,
+        url_original: entry.url_original,
+        click_count: entry.click_count ?? 0,
+        created_at: entry.created_at ?? null,
+        saved_at: new Date().toISOString(),
+      });
+      saveMyLinks(links);
+      renderMyLinks();
+      refreshAllLinkStats();
+    }
+
+    function renderMyLinks() {
+      const links = loadMyLinks();
+      const hasLinks = links.length > 0;
+
+      myLinksEmpty.hidden = hasLinks;
+      myLinksList.hidden = !hasLinks;
+      clearLinksBtn.hidden = !hasLinks;
+
+      if (!hasLinks) {
+        myLinksList.innerHTML = "";
+        return;
+      }
+
+      myLinksList.innerHTML = links
+        .map((link) => {
+          const shortUrl = window.location.origin + "/" + link.url_short;
+          return (
+            '<li class="my-link-item" data-url-short="' + link.url_short + '">' +
+              '<div class="my-link-primary">' +
+                '<a href="' + link.url_original + '" target="_blank" rel="noopener noreferrer">' + link.url_original + "</a>" +
+              "</div>" +
+              '<div class="my-link-short-row">' +
+                '<a href="' + shortUrl + '" target="_blank" rel="noopener noreferrer">' + shortUrl + "</a>" +
+                '<button type="button" class="copy-btn" data-copy="' + shortUrl + '" aria-label="Copy short link" title="Copy short link">' +
+                  '<svg class="icon-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+                    '<rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>' +
+                    '<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>' +
+                  "</svg>" +
+                  '<svg class="icon-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+                    '<polyline points="20 6 9 17 4 12"></polyline>' +
+                  "</svg>" +
+                "</button>" +
+              "</div>" +
+              '<div class="my-link-stats">' +
+                '<div class="my-link-stat">' +
+                  '<span class="my-link-stat-value" data-stat="clicks">' + (link.click_count ?? 0) + "</span>" +
+                  '<span class="my-link-stat-label">Clicks</span>' +
+                "</div>" +
+                '<div class="my-link-stat">' +
+                  '<span class="my-link-stat-value" data-stat="created">' + formatCreatedAt(link.created_at) + "</span>" +
+                  '<span class="my-link-stat-label">Created</span>' +
+                "</div>" +
+              "</div>" +
+            "</li>"
+          );
+        })
+        .join("");
+    }
 
     function showError(message) {
       errorBox.textContent = message;
@@ -345,6 +678,18 @@
 
         shortLink.href = fullShortUrl;
         shortLink.textContent = fullShortUrl;
+
+        const clicks = data.click_count ?? 0;
+        clickCountEl.innerHTML = formatClicks(clicks) + " so far";
+        clickCountEl.hidden = false;
+
+        upsertMyLink({
+          url_short: data.url_short,
+          url_original: data.url_original,
+          click_count: clicks,
+          created_at: data.created_at ?? null,
+        });
+
         resultBox.classList.add("visible");
       } catch (err) {
         showError("Could not shorten URL. Please try again.");
@@ -357,27 +702,45 @@
 
     let copyResetTimer = null;
 
-    copyBtn.addEventListener("click", async () => {
-      const text = shortLink.textContent;
-      if (!text) return;
+    async function copyText(text, button) {
+      if (!text || !button) return;
 
       try {
         await navigator.clipboard.writeText(text);
         if (copyResetTimer) clearTimeout(copyResetTimer);
 
-        copyBtn.classList.add("copied");
-        copyBtn.setAttribute("aria-label", "Copied");
-        copyBtn.setAttribute("title", "Copied");
+        button.classList.add("copied");
+        button.setAttribute("aria-label", "Copied");
+        button.setAttribute("title", "Copied");
 
         copyResetTimer = setTimeout(() => {
-          copyBtn.classList.remove("copied");
-          copyBtn.setAttribute("aria-label", "Copy link");
-          copyBtn.setAttribute("title", "Copy link");
+          button.classList.remove("copied");
+          button.setAttribute("aria-label", "Copy link");
+          button.setAttribute("title", "Copy link");
         }, 1500);
       } catch {
         showError("Could not copy to clipboard.");
       }
+    }
+
+    copyBtn.addEventListener("click", () => {
+      copyText(shortLink.textContent, copyBtn);
     });
+
+    myLinksList.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-copy]");
+      if (!button) return;
+      copyText(button.dataset.copy, button);
+    });
+
+    clearLinksBtn.addEventListener("click", () => {
+      localStorage.removeItem(STORAGE_KEY);
+      renderMyLinks();
+    });
+
+    renderMyLinks();
+    refreshAllLinkStats();
+    startStatsPolling();
   </script>
 </body>
 </html>

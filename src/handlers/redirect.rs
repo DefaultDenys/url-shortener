@@ -17,6 +17,9 @@ pub async fn redirect_handler(
     match search_result {
         Some(url_model) => {
             info!(%url_model.url_short, %url_model.url_original, "redirecting to original url");
+            if let Err(err) = url_repository.increment_click_count(&url_short).await {
+                tracing::error!(%err, "failed to increment click count");
+            }
             Ok(Redirect::temporary(&url_model.url_original))
         }
         None => {

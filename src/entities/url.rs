@@ -10,6 +10,8 @@ pub struct Model {
     pub url_original: String,
 
     pub created_at: String,
+
+    pub click_count: i32,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
