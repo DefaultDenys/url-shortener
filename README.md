@@ -1,12 +1,27 @@
 # URL Shortener
 
-Rust URL shortener with Axum + Tokio. Web UI, JSON API, and redirects. SQLite persistence via SeaORM.
+Rust URL shortener with Axum + Tokio. Web UI, JSON API, and redirects. PostgreSQL persistence via SeaORM.
 
 **Live:** [https://url-shortener-rust.up.railway.app/](https://url-shortener-rust.up.railway.app/)
 
 ## Stack
 
-Axum, Tokio, SeaORM, SQLite, Serde, tracing, tower-http, dotenvy
+Axum, Tokio, SeaORM, PostgreSQL, Serde, tracing, tower-http, dotenvy
+
+## Database
+
+Requires PostgreSQL. Migrations run automatically on startup.
+
+**Local dev — Postgres in Docker, app with Cargo:**
+
+```bash
+docker compose up -d
+cargo run
+```
+
+`docker-compose.yml` only runs the database. App: [http://127.0.0.1:3000](http://127.0.0.1:3000)
+
+On Railway: add a **PostgreSQL** service, link it to the app (sets `DATABASE_URL`), and deploy with the included `Dockerfile`.
 
 ## Run
 

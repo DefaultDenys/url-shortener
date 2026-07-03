@@ -31,7 +31,8 @@ async fn main() {
 
     let app = router::build_router(state);
 
-    let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
+    let port = env::var("PORT").unwrap_or_else(|_| "3000".to_string());
+    let addr = SocketAddr::from(([0, 0, 0, 0], port.parse().expect("PORT must be a number")));
     info!(%addr, "server listening");
 
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
