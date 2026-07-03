@@ -1,6 +1,8 @@
 pub use sea_orm_migration::prelude::*;
 
 mod m20220101_000001_create_table;
+mod m20260703_131938_add_counter;
+mod m20260703_142632_create_click_table;
 
 pub struct Migrator;
 
@@ -9,6 +11,8 @@ impl MigratorTrait for Migrator {
     fn migrations() -> Vec<Box<dyn MigrationTrait>> {
         vec![
             Box::new(m20220101_000001_create_table::Migration),
+            Box::new(m20260703_131938_add_counter::Migration),
+            Box::new(m20260703_142632_create_click_table::Migration),
         ]
     }
 }

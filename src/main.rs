@@ -30,9 +30,10 @@ async fn main() {
         .await
         .expect("failed to run migrations");
 
-    let url_repository = store::UrlRepository::new(db);
+    let url_repository = store::UrlRepository::new(db.clone());
+    let click_repository = store::ClickRepository::new(db);
 
-    let state = AppState::new(url_repository);
+    let state = AppState::new(url_repository, click_repository);
 
     let app = router::build_router(state);
 
@@ -47,7 +48,9 @@ async fn main() {
 fn database_url() -> String {
     let url = env::var("DATABASE_URL")
         .or_else(|_| env::var("DATABASE_PRIVATE_URL"))
-        .expect("DATABASE_URL must be set — on Railway: add PostgreSQL and link it to this service");
+        .expect(
+            "DATABASE_URL must be set — on Railway: add PostgreSQL and link it to this service",
+        );
 
     // Railway public Postgres proxy requires TLS with rustls
     if url.contains("rlwy.net") && !url.contains("sslmode=") {

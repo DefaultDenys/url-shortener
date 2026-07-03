@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>URL Shortener</title>
   <style>
     :root {
@@ -45,14 +45,18 @@
         var(--bg);
       color: var(--text);
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
       padding: 1.5rem;
     }
 
     main {
       width: 100%;
-      max-width: 520px;
+      max-width: 560px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      margin: auto;
     }
 
     .card {
@@ -184,6 +188,17 @@
       text-decoration: underline;
     }
 
+    .result-stats {
+      margin-top: 0.75rem;
+      font-size: 0.875rem;
+      color: var(--muted);
+    }
+
+    .result-stats strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
     .copy-btn {
       display: inline-flex;
       align-items: center;
@@ -242,11 +257,468 @@
       display: block;
     }
 
+    .my-links-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .my-links-header h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .my-links-note {
+      color: var(--muted);
+      font-size: 0.85rem;
+      line-height: 1.45;
+      margin-bottom: 1rem;
+    }
+
+    .clear-links-btn {
+      padding: 0.4rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      font-family: inherit;
+      color: var(--muted);
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .clear-links-btn:hover {
+      border-color: var(--error);
+      color: var(--error);
+    }
+
+    .my-links-empty {
+      padding: 1rem;
+      border-radius: 8px;
+      border: 1px dashed var(--border);
+      color: var(--muted);
+      font-size: 0.9rem;
+      text-align: center;
+    }
+
+    .my-links-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .my-link-item {
+      padding: 0.875rem 1rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .my-link-item.expanded {
+      border-color: rgba(247, 76, 0, 0.45);
+      box-shadow: 0 0 0 1px rgba(247, 76, 0, 0.12);
+    }
+
+    .my-link-primary {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+
+    .my-link-primary a {
+      flex: 1;
+      font-size: 0.95rem;
+      font-weight: 600;
+      line-height: 1.45;
+      color: var(--text);
+      word-break: break-all;
+      text-decoration: none;
+    }
+
+    .my-link-primary a:hover {
+      color: var(--accent);
+      text-decoration: underline;
+    }
+
+    .my-link-short-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.6rem;
+      padding-top: 0.6rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .my-link-short-row a {
+      flex: 1;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: var(--muted);
+      word-break: break-all;
+      text-decoration: none;
+    }
+
+    .my-link-short-row a:hover {
+      color: var(--success);
+      text-decoration: underline;
+    }
+
+    .my-link-short-row .copy-btn {
+      width: 2rem;
+      height: 2rem;
+    }
+
+    .my-link-summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-top: 0.65rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .my-link-summary strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .stats-toggle-btn {
+      padding: 0.35rem 0.7rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      font-family: inherit;
+      color: var(--text);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .stats-toggle-btn:hover,
+    .my-link-item.expanded .stats-toggle-btn {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .my-link-stats-panel {
+      margin-top: 0.85rem;
+      padding-top: 0.85rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .my-link-stats-panel[hidden] {
+      display: none;
+    }
+
+    .stats-panel-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+      margin-bottom: 0.85rem;
+    }
+
+    .stats-panel-stat {
+      padding: 0.55rem 0.7rem;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .stats-panel-stat-value {
+      display: block;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.2;
+    }
+
+    .stats-panel-stat-label {
+      display: block;
+      margin-top: 0.15rem;
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .chart-block + .chart-block {
+      margin-top: 0.85rem;
+    }
+
+    .chart-head {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      margin-bottom: 0.45rem;
+    }
+
+    .chart-title {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .chart-hover-info {
+      min-height: 1.15rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+
+    .chart-hover-info.is-active {
+      color: var(--text);
+    }
+
+    .chart-hover-info strong {
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .chart-bars {
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+      height: 72px;
+      padding: 0.35rem 0.4rem 0;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      position: relative;
+    }
+
+    .chart-bar {
+      flex: 1;
+      min-width: 0;
+      background: linear-gradient(to top, rgba(247, 76, 0, 0.55), rgba(247, 76, 0, 0.35));
+      border-radius: 2px 2px 0 0;
+      min-height: 2px;
+      opacity: 0.72;
+      transition: height 0.25s ease, opacity 0.12s, transform 0.12s, background 0.12s;
+      cursor: crosshair;
+    }
+
+    .chart-bar.has-clicks {
+      background: linear-gradient(to top, var(--accent), var(--accent-hover));
+      opacity: 0.88;
+    }
+
+    .chart-bar:hover,
+    .chart-bar.is-active {
+      opacity: 1;
+      transform: scaleY(1.03);
+      transform-origin: bottom;
+    }
+
+    .chart-bar.is-active {
+      box-shadow: 0 0 0 1px rgba(247, 76, 0, 0.35);
+    }
+
+    .chart-bars-hour {
+      height: 88px;
+    }
+
+    .chart-bars-day {
+      height: 88px;
+      gap: 4px;
+    }
+
+    .stats-loading {
+      font-size: 0.8rem;
+      color: var(--muted);
+      min-height: 0;
+      margin: 0;
+      padding: 0;
+    }
+
+    .stats-loading:not([hidden]) {
+      min-height: 1.25rem;
+      padding: 0.35rem 0 0.15rem;
+    }
+
+    .my-links-list[hidden],
+    .my-links-empty[hidden] {
+      display: none;
+    }
+
     footer {
-      margin-top: 1.25rem;
       text-align: center;
       font-size: 0.8rem;
       color: var(--muted);
+    }
+
+    button,
+    .copy-btn,
+    .stats-toggle-btn,
+    .clear-links-btn {
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding:
+          max(0.75rem, env(safe-area-inset-top))
+          max(0.75rem, env(safe-area-inset-right))
+          max(1rem, env(safe-area-inset-bottom))
+          max(0.75rem, env(safe-area-inset-left));
+      }
+
+      main {
+        gap: 1rem;
+      }
+
+      .card {
+        padding: 1.25rem;
+        border-radius: 10px;
+        box-shadow: 0 8px 28px rgba(0, 0, 0, 0.14);
+      }
+
+      h1 {
+        font-size: 1.45rem;
+      }
+
+      .subtitle {
+        font-size: 0.9rem;
+        margin-bottom: 1.25rem;
+      }
+
+      .input-row {
+        flex-direction: column;
+      }
+
+      input[type="url"] {
+        width: 100%;
+        min-height: 44px;
+        font-size: 16px;
+      }
+
+      button[type="submit"] {
+        width: 100%;
+        min-height: 44px;
+        padding: 0.85rem 1rem;
+      }
+
+      .copy-btn {
+        width: 2.75rem;
+        height: 2.75rem;
+      }
+
+      .my-links-header {
+        flex-wrap: wrap;
+        align-items: flex-start;
+      }
+
+      .my-links-header h2 {
+        font-size: 1rem;
+        flex: 1 1 auto;
+      }
+
+      .clear-links-btn {
+        min-height: 40px;
+        padding: 0.5rem 0.85rem;
+      }
+
+      .my-link-item {
+        padding: 0.75rem 0.85rem;
+      }
+
+      .my-link-primary a {
+        font-size: 0.9rem;
+      }
+
+      .my-link-short-row {
+        align-items: flex-start;
+      }
+
+      .my-link-short-row .copy-btn {
+        width: 2.75rem;
+        height: 2.75rem;
+      }
+
+      .my-link-summary {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.55rem;
+      }
+
+      .stats-toggle-btn {
+        width: 100%;
+        min-height: 44px;
+        padding: 0.6rem 0.85rem;
+        font-size: 0.8rem;
+      }
+
+      .stats-panel-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .chart-hover-info {
+        font-size: 0.74rem;
+        line-height: 1.4;
+        word-break: break-word;
+      }
+
+      .chart-bars {
+        height: 64px;
+      }
+
+      .chart-bars-hour,
+      .chart-bars-day {
+        height: 72px;
+      }
+
+      .chart-bars[data-chart-minute] {
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+        gap: 3px;
+        padding-bottom: 0.3rem;
+      }
+
+      .chart-bars[data-chart-minute] .chart-bar {
+        flex: 0 0 6px;
+        min-width: 6px;
+      }
+
+      .chart-bar {
+        cursor: pointer;
+      }
+
+      .chart-bar:hover {
+        transform: none;
+      }
+
+      .chart-bar.is-active {
+        transform: scaleY(1.05);
+      }
+    }
+
+    @media (max-width: 380px) {
+      .card {
+        padding: 1rem;
+      }
+
+      h1 {
+        font-size: 1.3rem;
+      }
+
+      .my-links-note {
+        font-size: 0.8rem;
+      }
     }
   </style>
 </head>
@@ -294,20 +766,500 @@
             </svg>
           </button>
         </div>
+        <p id="click-count" class="result-stats" hidden></p>
       </div>
+    </div>
+
+    <div class="card" id="my-links-card">
+      <div class="my-links-header">
+        <h2>Links on this computer</h2>
+        <button type="button" class="clear-links-btn" id="clear-links-btn" hidden>
+          Clear list
+        </button>
+      </div>
+      <p class="my-links-note">
+        Saved in this browser only. Clearing site data or using another device will not show these links.
+      </p>
+      <p id="my-links-empty" class="my-links-empty">No links yet. Shorten a URL above to see it here.</p>
+      <ul id="my-links-list" class="my-links-list" hidden></ul>
     </div>
 
     <footer>Made by Denis Lempl</footer>
   </main>
 
   <script>
+    const STORAGE_KEY = "url-shortener:my-links";
+    const STATS_POLL_MS = 10000;
+
     const form = document.getElementById("shorten-form");
     const input = document.getElementById("url_original");
     const submitBtn = document.getElementById("submit-btn");
     const resultBox = document.getElementById("result");
     const shortLink = document.getElementById("short-link");
     const copyBtn = document.getElementById("copy-btn");
+    const clickCountEl = document.getElementById("click-count");
     const errorBox = document.getElementById("error");
+    const myLinksList = document.getElementById("my-links-list");
+    const myLinksEmpty = document.getElementById("my-links-empty");
+    const clearLinksBtn = document.getElementById("clear-links-btn");
+
+    function loadMyLinks() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveMyLinks(links) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(links));
+    }
+
+    function formatClicks(count) {
+      const clicks = count ?? 0;
+      const label = clicks === 1 ? "click" : "clicks";
+      return "<strong>" + clicks + "</strong> " + label;
+    }
+
+    function formatCreatedAt(value) {
+      if (!value) return "—";
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "—";
+      return date.toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+    }
+
+    function updateStoredLinkStats(url_short, stats) {
+      const links = loadMyLinks();
+      const index = links.findIndex((item) => item.url_short === url_short);
+      if (index === -1) return;
+
+      links[index] = {
+        ...links[index],
+        click_count: stats.click_count ?? links[index].click_count,
+        created_at: stats.created_at ?? links[index].created_at,
+      };
+      saveMyLinks(links);
+    }
+
+    async function fetchLinkStats(url_short) {
+      const response = await fetch("/stats/" + encodeURIComponent(url_short));
+      if (!response.ok) return null;
+      return response.json();
+    }
+
+    function formatChartTime(iso, mode) {
+      const date = new Date(iso);
+      if (Number.isNaN(date.getTime())) return "";
+      if (mode === "minute") {
+        return date.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+      }
+      if (mode === "hour") {
+        return date.toLocaleTimeString(undefined, { hour: "2-digit" });
+      }
+      return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+    }
+
+    function formatChartDetail(iso, mode) {
+      const date = new Date(iso);
+      if (Number.isNaN(date.getTime())) return "Unknown time";
+
+      if (mode === "minute") {
+        return date.toLocaleString(undefined, {
+          weekday: "short",
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      }
+
+      if (mode === "hour") {
+        const end = new Date(date.getTime() + 60 * 60 * 1000);
+        const startLabel = date.toLocaleString(undefined, {
+          weekday: "short",
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+        });
+        const endLabel = end.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+        return startLabel + " – " + endLabel;
+      }
+
+      return date.toLocaleDateString(undefined, {
+        weekday: "long",
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+    }
+
+    function formatPercent(value) {
+      if (!Number.isFinite(value) || value <= 0) return "0%";
+      if (value < 1) return "<1%";
+      return Math.round(value) + "%";
+    }
+
+    function clearChartHover(block) {
+      if (!block) return;
+      const info = block.querySelector("[data-chart-info]");
+      const bars = block.querySelectorAll(".chart-bar.is-active");
+      bars.forEach((bar) => bar.classList.remove("is-active"));
+      if (info) {
+        info.classList.remove("is-active");
+        info.textContent = "Hover a bar for details";
+      }
+    }
+
+    function showChartBarInfo(bar) {
+      const block = bar.closest(".chart-block");
+      if (!block) return;
+
+      block.querySelectorAll(".chart-bar.is-active").forEach((node) => {
+        node.classList.remove("is-active");
+      });
+
+      bar.classList.add("is-active");
+
+      const info = block.querySelector("[data-chart-info]");
+      if (!info) return;
+
+      const count = Number(bar.dataset.count || 0);
+      const pctMax = Number(bar.dataset.pctMax || 0);
+      const pctPeriod = Number(bar.dataset.pctPeriod || 0);
+      const when = bar.dataset.bucketLabel || "Unknown time";
+      const clickLabel = count === 1 ? "click" : "clicks";
+
+      info.classList.add("is-active");
+
+      if (count === 0) {
+        info.innerHTML = when + " · <strong>0 clicks</strong> in this period";
+        return;
+      }
+
+      info.innerHTML =
+        when +
+        " · <strong>" +
+        count +
+        " " +
+        clickLabel +
+        "</strong> · " +
+        formatPercent(pctMax) +
+        " of peak · " +
+        formatPercent(pctPeriod) +
+        " of chart total";
+    }
+
+    function buildBarMetrics(buckets) {
+      const max = Math.max(1, ...buckets.map((b) => b.count || 0));
+      const periodTotal = buckets.reduce((sum, bucket) => sum + (bucket.count || 0), 0);
+      return { max, periodTotal };
+    }
+
+    function applyBarMetrics(bar, bucket, mode, max, periodTotal) {
+      const count = bucket.count || 0;
+      const height = Math.max(2, Math.round((count / max) * 100));
+      const pctMax = (count / max) * 100;
+      const pctPeriod = periodTotal > 0 ? (count / periodTotal) * 100 : 0;
+      const detail = formatChartDetail(bucket.bucket, mode);
+
+      bar.style.height = height + "%";
+      bar.dataset.count = String(count);
+      bar.dataset.pctMax = String(pctMax);
+      bar.dataset.pctPeriod = String(pctPeriod);
+      bar.dataset.bucketLabel = detail;
+      bar.setAttribute("aria-label", detail + ": " + count + " clicks");
+      bar.classList.toggle("has-clicks", count > 0);
+    }
+
+    function renderBarChart(container, buckets, mode) {
+      if (!container || !Array.isArray(buckets) || buckets.length === 0) {
+        if (container) container.innerHTML = "";
+        return;
+      }
+
+      const { max, periodTotal } = buildBarMetrics(buckets);
+      container.dataset.chartMode = mode;
+
+      container.innerHTML = buckets
+        .map((bucket) => {
+          const count = bucket.count || 0;
+          const height = Math.max(2, Math.round((count / max) * 100));
+          const pctMax = (count / max) * 100;
+          const pctPeriod = periodTotal > 0 ? (count / periodTotal) * 100 : 0;
+          const classes = "chart-bar" + (count > 0 ? " has-clicks" : "");
+          const detail = formatChartDetail(bucket.bucket, mode);
+
+          return (
+            '<div class="' +
+            classes +
+            '" style="height:' +
+            height +
+            '%" data-count="' +
+            count +
+            '" data-pct-max="' +
+            pctMax +
+            '" data-pct-period="' +
+            pctPeriod +
+            '" data-bucket-label="' +
+            detail.replace(/"/g, "&quot;") +
+            '" aria-label="' +
+            detail.replace(/"/g, "&quot;") +
+            ": " +
+            count +
+            ' clicks"></div>'
+          );
+        })
+        .join("");
+    }
+
+    function updateBarChart(container, buckets, mode) {
+      if (!container || !Array.isArray(buckets) || buckets.length === 0) {
+        if (container) container.innerHTML = "";
+        return;
+      }
+
+      const bars = container.querySelectorAll(".chart-bar");
+      if (bars.length !== buckets.length) {
+        renderBarChart(container, buckets, mode);
+        return;
+      }
+
+      const { max, periodTotal } = buildBarMetrics(buckets);
+      container.dataset.chartMode = mode;
+      buckets.forEach((bucket, index) => {
+        applyBarMetrics(bars[index], bucket, mode, max, periodTotal);
+      });
+    }
+
+    function scrollChartToLatest(container) {
+      if (!container) return;
+      requestAnimationFrame(() => {
+        container.scrollLeft = container.scrollWidth;
+      });
+    }
+
+    function updateLinkSummary(item, stats, options) {
+      const silent = options && options.silent === true;
+      const summaryEl = item.querySelector("[data-summary-text]");
+      const totalEl = item.querySelector("[data-stat-total]");
+      const createdEl = item.querySelector("[data-stat-created-full]");
+
+      const clicks = stats.click_count ?? 0;
+      const created = formatCreatedAt(stats.created_at);
+
+      if (summaryEl) {
+        summaryEl.innerHTML =
+          "<strong>" + clicks + "</strong> clicks · <strong>" + created + "</strong>";
+      }
+      if (totalEl) totalEl.textContent = clicks;
+      if (createdEl) createdEl.textContent = created;
+
+      const minuteChart = item.querySelector("[data-chart-minute]");
+      const chartUpdater = silent ? updateBarChart : renderBarChart;
+      chartUpdater(minuteChart, stats.clicks_per_minute, "minute");
+      chartUpdater(item.querySelector("[data-chart-hour]"), stats.clicks_per_hour, "hour");
+      chartUpdater(item.querySelector("[data-chart-day]"), stats.clicks_per_day, "day");
+      scrollChartToLatest(minuteChart);
+
+      const activeBar = item.querySelector(".chart-bar.is-active");
+      if (activeBar) {
+        showChartBarInfo(activeBar);
+        return;
+      }
+
+      if (!silent) {
+        item.querySelectorAll("[data-chart-info]").forEach((el) => {
+          el.classList.remove("is-active");
+          el.textContent = "Hover a bar for details";
+        });
+      }
+    }
+
+    async function loadStatsForItem(item, options) {
+      const silent = options && options.silent === true;
+      const url_short = item.dataset.urlShort;
+      const loadingEl = item.querySelector("[data-stats-loading]");
+
+      if (loadingEl && !silent) loadingEl.hidden = false;
+
+      try {
+        const stats = await fetchLinkStats(url_short);
+        if (!stats) return;
+        updateLinkSummary(item, stats, { silent });
+        updateStoredLinkStats(url_short, stats);
+        item.dataset.statsLoaded = "true";
+      } catch (err) {
+        console.error("Failed to load stats for", url_short, err);
+      } finally {
+        if (loadingEl && !silent) loadingEl.hidden = true;
+      }
+    }
+
+    let expandedUrlShort = null;
+    let expandedPollTimer = null;
+
+    function stopExpandedPolling() {
+      if (expandedPollTimer) {
+        clearInterval(expandedPollTimer);
+        expandedPollTimer = null;
+      }
+    }
+
+    function startExpandedPolling(url_short) {
+      stopExpandedPolling();
+      expandedPollTimer = setInterval(() => {
+        const item = myLinksList.querySelector(
+          '.my-link-item[data-url-short="' + url_short + '"]'
+        );
+        if (item && item.classList.contains("expanded")) {
+          loadStatsForItem(item, { silent: true });
+        } else {
+          stopExpandedPolling();
+        }
+      }, STATS_POLL_MS);
+    }
+
+    function collapseAllStatsPanels(exceptUrlShort) {
+      myLinksList.querySelectorAll(".my-link-item.expanded").forEach((item) => {
+        if (item.dataset.urlShort === exceptUrlShort) return;
+        item.classList.remove("expanded");
+        const panel = item.querySelector(".my-link-stats-panel");
+        const toggle = item.querySelector("[data-stats-toggle]");
+        if (panel) panel.hidden = true;
+        if (toggle) toggle.textContent = "Statistics";
+      });
+    }
+
+    function toggleStatsPanel(item) {
+      const url_short = item.dataset.urlShort;
+      const panel = item.querySelector(".my-link-stats-panel");
+      const toggle = item.querySelector("[data-stats-toggle]");
+      const isOpen = item.classList.contains("expanded");
+
+      if (isOpen) {
+        item.classList.remove("expanded");
+        panel.hidden = true;
+        toggle.textContent = "Statistics";
+        if (expandedUrlShort === url_short) {
+          expandedUrlShort = null;
+          stopExpandedPolling();
+        }
+        return;
+      }
+
+      collapseAllStatsPanels(url_short);
+      item.classList.add("expanded");
+      panel.hidden = false;
+      toggle.textContent = "Hide stats";
+      expandedUrlShort = url_short;
+      loadStatsForItem(item);
+      startExpandedPolling(url_short);
+    }
+
+    function upsertMyLink(entry) {
+      const links = loadMyLinks().filter((item) => item.url_short !== entry.url_short);
+      links.unshift({
+        url_short: entry.url_short,
+        url_original: entry.url_original,
+        click_count: entry.click_count ?? 0,
+        created_at: entry.created_at ?? null,
+        saved_at: new Date().toISOString(),
+      });
+      saveMyLinks(links);
+      const wasExpanded = expandedUrlShort;
+      renderMyLinks();
+      if (wasExpanded) {
+        const item = myLinksList.querySelector(
+          '.my-link-item[data-url-short="' + wasExpanded + '"]'
+        );
+        if (item) toggleStatsPanel(item);
+      }
+    }
+
+    function renderMyLinks() {
+      const links = loadMyLinks();
+      const hasLinks = links.length > 0;
+
+      myLinksEmpty.hidden = hasLinks;
+      myLinksList.hidden = !hasLinks;
+      clearLinksBtn.hidden = !hasLinks;
+
+      if (!hasLinks) {
+        myLinksList.innerHTML = "";
+        return;
+      }
+
+      myLinksList.innerHTML = links
+        .map((link) => {
+          const shortUrl = window.location.origin + "/" + link.url_short;
+          return (
+            '<li class="my-link-item" data-url-short="' + link.url_short + '">' +
+              '<div class="my-link-primary">' +
+                '<a href="' + link.url_original + '" target="_blank" rel="noopener noreferrer">' + link.url_original + "</a>" +
+              "</div>" +
+              '<div class="my-link-short-row">' +
+                '<a href="' + shortUrl + '" target="_blank" rel="noopener noreferrer">' + shortUrl + "</a>" +
+                '<button type="button" class="copy-btn" data-copy="' + shortUrl + '" aria-label="Copy short link" title="Copy short link">' +
+                  '<svg class="icon-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+                    '<rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>' +
+                    '<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>' +
+                  "</svg>" +
+                  '<svg class="icon-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+                    '<polyline points="20 6 9 17 4 12"></polyline>' +
+                  "</svg>" +
+                "</button>" +
+              "</div>" +
+              '<div class="my-link-summary">' +
+                '<span data-summary-text><strong>' + (link.click_count ?? 0) + "</strong> clicks · <strong>" +
+                  formatCreatedAt(link.created_at) + "</strong></span>" +
+                '<button type="button" class="stats-toggle-btn" data-stats-toggle>Statistics</button>' +
+              "</div>" +
+              '<div class="my-link-stats-panel" hidden>' +
+                '<p class="stats-loading" data-stats-loading hidden>Loading stats…</p>' +
+                '<div class="stats-panel-grid">' +
+                  '<div class="stats-panel-stat">' +
+                    '<span class="stats-panel-stat-value" data-stat-total>' + (link.click_count ?? 0) + "</span>" +
+                    '<span class="stats-panel-stat-label">Total clicks</span>' +
+                  "</div>" +
+                  '<div class="stats-panel-stat">' +
+                    '<span class="stats-panel-stat-value" data-stat-created-full>' + formatCreatedAt(link.created_at) + "</span>" +
+                    '<span class="stats-panel-stat-label">Created</span>' +
+                  "</div>" +
+                "</div>" +
+                '<div class="chart-block">' +
+                  '<div class="chart-head">' +
+                    '<div class="chart-title">Last 60 minutes</div>' +
+                    '<div class="chart-hover-info" data-chart-info>Hover a bar for details</div>' +
+                  "</div>" +
+                  '<div class="chart-bars" data-chart-minute></div>' +
+                "</div>" +
+                '<div class="chart-block">' +
+                  '<div class="chart-head">' +
+                    '<div class="chart-title">Last 24 hours</div>' +
+                    '<div class="chart-hover-info" data-chart-info>Hover a bar for details</div>' +
+                  "</div>" +
+                  '<div class="chart-bars chart-bars-hour" data-chart-hour></div>' +
+                "</div>" +
+                '<div class="chart-block">' +
+                  '<div class="chart-head">' +
+                    '<div class="chart-title">Last 7 days</div>' +
+                    '<div class="chart-hover-info" data-chart-info>Hover a bar for details</div>' +
+                  "</div>" +
+                  '<div class="chart-bars chart-bars-day" data-chart-day></div>' +
+                "</div>" +
+              "</div>" +
+            "</li>"
+          );
+        })
+        .join("");
+    }
 
     function showError(message) {
       errorBox.textContent = message;
@@ -345,6 +1297,18 @@
 
         shortLink.href = fullShortUrl;
         shortLink.textContent = fullShortUrl;
+
+        const clicks = data.click_count ?? 0;
+        clickCountEl.innerHTML = formatClicks(clicks) + " so far";
+        clickCountEl.hidden = false;
+
+        upsertMyLink({
+          url_short: data.url_short,
+          url_original: data.url_original,
+          click_count: clicks,
+          created_at: data.created_at ?? null,
+        });
+
         resultBox.classList.add("visible");
       } catch (err) {
         showError("Could not shorten URL. Please try again.");
@@ -357,27 +1321,77 @@
 
     let copyResetTimer = null;
 
-    copyBtn.addEventListener("click", async () => {
-      const text = shortLink.textContent;
-      if (!text) return;
+    async function copyText(text, button) {
+      if (!text || !button) return;
 
       try {
         await navigator.clipboard.writeText(text);
         if (copyResetTimer) clearTimeout(copyResetTimer);
 
-        copyBtn.classList.add("copied");
-        copyBtn.setAttribute("aria-label", "Copied");
-        copyBtn.setAttribute("title", "Copied");
+        button.classList.add("copied");
+        button.setAttribute("aria-label", "Copied");
+        button.setAttribute("title", "Copied");
 
         copyResetTimer = setTimeout(() => {
-          copyBtn.classList.remove("copied");
-          copyBtn.setAttribute("aria-label", "Copy link");
-          copyBtn.setAttribute("title", "Copy link");
+          button.classList.remove("copied");
+          button.setAttribute("aria-label", "Copy link");
+          button.setAttribute("title", "Copy link");
         }, 1500);
       } catch {
         showError("Could not copy to clipboard.");
       }
+    }
+
+    copyBtn.addEventListener("click", () => {
+      copyText(shortLink.textContent, copyBtn);
     });
+
+    myLinksList.addEventListener("click", (event) => {
+      const chartBar = event.target.closest(".chart-bar");
+      if (chartBar) {
+        showChartBarInfo(chartBar);
+        return;
+      }
+
+      const statsToggle = event.target.closest("[data-stats-toggle]");
+      if (statsToggle) {
+        const item = statsToggle.closest(".my-link-item");
+        if (item) toggleStatsPanel(item);
+        return;
+      }
+
+      const button = event.target.closest("[data-copy]");
+      if (!button) return;
+      copyText(button.dataset.copy, button);
+    });
+
+    myLinksList.addEventListener("mouseover", (event) => {
+      const bar = event.target.closest(".chart-bar");
+      if (!bar || !myLinksList.contains(bar)) return;
+      showChartBarInfo(bar);
+    });
+
+    myLinksList.addEventListener("mouseout", (event) => {
+      const bar = event.target.closest(".chart-bar");
+      if (!bar || !myLinksList.contains(bar)) return;
+
+      const related = event.relatedTarget;
+      if (related && bar.contains(related)) return;
+
+      const block = bar.closest(".chart-block");
+      if (block && related && block.contains(related) && related.closest(".chart-bar")) return;
+
+      clearChartHover(block);
+    });
+
+    clearLinksBtn.addEventListener("click", () => {
+      localStorage.removeItem(STORAGE_KEY);
+      expandedUrlShort = null;
+      stopExpandedPolling();
+      renderMyLinks();
+    });
+
+    renderMyLinks();
   </script>
 </body>
 </html>

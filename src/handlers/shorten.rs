@@ -21,6 +21,7 @@ pub async fn shorten_handler(
         return Json(ShortenResponse {
             url_short: url_model.url_short,
             url_original: url_model.url_original,
+            click_count: url_model.click_count,
         });
     }
 
@@ -35,5 +36,6 @@ pub async fn shorten_handler(
     Json(ShortenResponse {
         url_short: db_result.url_short,
         url_original: db_result.url_original,
+        click_count: db_result.click_count,
     })
 }
