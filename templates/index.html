@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>URL Shortener</title>
   <style>
     :root {
@@ -558,6 +558,168 @@
       font-size: 0.8rem;
       color: var(--muted);
     }
+
+    button,
+    .copy-btn,
+    .stats-toggle-btn,
+    .clear-links-btn {
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding:
+          max(0.75rem, env(safe-area-inset-top))
+          max(0.75rem, env(safe-area-inset-right))
+          max(1rem, env(safe-area-inset-bottom))
+          max(0.75rem, env(safe-area-inset-left));
+      }
+
+      main {
+        gap: 1rem;
+      }
+
+      .card {
+        padding: 1.25rem;
+        border-radius: 10px;
+        box-shadow: 0 8px 28px rgba(0, 0, 0, 0.14);
+      }
+
+      h1 {
+        font-size: 1.45rem;
+      }
+
+      .subtitle {
+        font-size: 0.9rem;
+        margin-bottom: 1.25rem;
+      }
+
+      .input-row {
+        flex-direction: column;
+      }
+
+      input[type="url"] {
+        width: 100%;
+        min-height: 44px;
+        font-size: 16px;
+      }
+
+      button[type="submit"] {
+        width: 100%;
+        min-height: 44px;
+        padding: 0.85rem 1rem;
+      }
+
+      .copy-btn {
+        width: 2.75rem;
+        height: 2.75rem;
+      }
+
+      .my-links-header {
+        flex-wrap: wrap;
+        align-items: flex-start;
+      }
+
+      .my-links-header h2 {
+        font-size: 1rem;
+        flex: 1 1 auto;
+      }
+
+      .clear-links-btn {
+        min-height: 40px;
+        padding: 0.5rem 0.85rem;
+      }
+
+      .my-link-item {
+        padding: 0.75rem 0.85rem;
+      }
+
+      .my-link-primary a {
+        font-size: 0.9rem;
+      }
+
+      .my-link-short-row {
+        align-items: flex-start;
+      }
+
+      .my-link-short-row .copy-btn {
+        width: 2.75rem;
+        height: 2.75rem;
+      }
+
+      .my-link-summary {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.55rem;
+      }
+
+      .stats-toggle-btn {
+        width: 100%;
+        min-height: 44px;
+        padding: 0.6rem 0.85rem;
+        font-size: 0.8rem;
+      }
+
+      .stats-panel-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .chart-hover-info {
+        font-size: 0.74rem;
+        line-height: 1.4;
+        word-break: break-word;
+      }
+
+      .chart-bars {
+        height: 64px;
+      }
+
+      .chart-bars-hour,
+      .chart-bars-day {
+        height: 72px;
+      }
+
+      .chart-bars[data-chart-minute] {
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+        gap: 3px;
+        padding-bottom: 0.3rem;
+      }
+
+      .chart-bars[data-chart-minute] .chart-bar {
+        flex: 0 0 6px;
+        min-width: 6px;
+      }
+
+      .chart-bar {
+        cursor: pointer;
+      }
+
+      .chart-bar:hover {
+        transform: none;
+      }
+
+      .chart-bar.is-active {
+        transform: scaleY(1.05);
+      }
+    }
+
+    @media (max-width: 380px) {
+      .card {
+        padding: 1rem;
+      }
+
+      h1 {
+        font-size: 1.3rem;
+      }
+
+      .my-links-note {
+        font-size: 0.8rem;
+      }
+    }
   </style>
 </head>
 <body>
@@ -876,6 +1038,13 @@
       });
     }
 
+    function scrollChartToLatest(container) {
+      if (!container) return;
+      requestAnimationFrame(() => {
+        container.scrollLeft = container.scrollWidth;
+      });
+    }
+
     function updateLinkSummary(item, stats, options) {
       const silent = options && options.silent === true;
       const summaryEl = item.querySelector("[data-summary-text]");
@@ -892,10 +1061,12 @@
       if (totalEl) totalEl.textContent = clicks;
       if (createdEl) createdEl.textContent = created;
 
+      const minuteChart = item.querySelector("[data-chart-minute]");
       const chartUpdater = silent ? updateBarChart : renderBarChart;
-      chartUpdater(item.querySelector("[data-chart-minute]"), stats.clicks_per_minute, "minute");
+      chartUpdater(minuteChart, stats.clicks_per_minute, "minute");
       chartUpdater(item.querySelector("[data-chart-hour]"), stats.clicks_per_hour, "hour");
       chartUpdater(item.querySelector("[data-chart-day]"), stats.clicks_per_day, "day");
+      scrollChartToLatest(minuteChart);
 
       const activeBar = item.querySelector(".chart-bar.is-active");
       if (activeBar) {
@@ -1176,6 +1347,12 @@
     });
 
     myLinksList.addEventListener("click", (event) => {
+      const chartBar = event.target.closest(".chart-bar");
+      if (chartBar) {
+        showChartBarInfo(chartBar);
+        return;
+      }
+
       const statsToggle = event.target.closest("[data-stats-toggle]");
       if (statsToggle) {
         const item = statsToggle.closest(".my-link-item");
