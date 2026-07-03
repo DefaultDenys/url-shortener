@@ -18,8 +18,4 @@ WORKDIR /app
 
 COPY --from=builder /app/target/release/url-shortener /app/url-shortener
 
-ENV PORT=3000
-
-EXPOSE 3000
-
 CMD ["/app/url-shortener"]
