@@ -19,11 +19,16 @@ async fn main() {
     dotenvy::dotenv().ok();
     tracing_config::init_tracing();
 
-    let db = store::connect(&env::var("DATABASE_URL").unwrap())
-        .await
-        .unwrap();
+    let database_url = database_url();
+    info!("connecting to database");
 
-    Migrator::up(&db, None).await.unwrap();
+    let db = store::connect(&database_url)
+        .await
+        .expect("failed to connect to database — check DATABASE_URL and that PostgreSQL is linked");
+
+    Migrator::up(&db, None)
+        .await
+        .expect("failed to run migrations");
 
     let url_repository = store::UrlRepository::new(db);
 
@@ -37,4 +42,21 @@ async fn main() {
 
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
     axum::serve(listener, app).await.unwrap();
+}
+
+fn database_url() -> String {
+    let url = env::var("DATABASE_URL")
+        .or_else(|_| env::var("DATABASE_PRIVATE_URL"))
+        .expect("DATABASE_URL must be set — on Railway: add PostgreSQL and link it to this service");
+
+    // Railway public Postgres proxy requires TLS with rustls
+    if url.contains("rlwy.net") && !url.contains("sslmode=") {
+        if url.contains('?') {
+            format!("{url}&sslmode=require")
+        } else {
+            format!("{url}?sslmode=require")
+        }
+    } else {
+        url
+    }
 }
