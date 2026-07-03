@@ -52,7 +52,7 @@
 
     main {
       width: 100%;
-      max-width: 520px;
+      max-width: 560px;
       display: flex;
       flex-direction: column;
       gap: 1.25rem;
@@ -318,6 +318,12 @@
       border-radius: 8px;
       border: 1px solid var(--border);
       background: var(--bg);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .my-link-item.expanded {
+      border-color: rgba(247, 76, 0, 0.45);
+      box-shadow: 0 0 0 1px rgba(247, 76, 0, 0.12);
     }
 
     .my-link-primary {
@@ -369,30 +375,74 @@
       height: 2rem;
     }
 
-    .my-link-stats {
+    .my-link-summary {
       display: flex;
-      gap: 0.5rem;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
       margin-top: 0.65rem;
+      font-size: 0.8rem;
+      color: var(--muted);
     }
 
-    .my-link-stat {
-      flex: 1;
-      min-width: 0;
-      padding: 0.5rem 0.65rem;
+    .my-link-summary strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .stats-toggle-btn {
+      padding: 0.35rem 0.7rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      font-family: inherit;
+      color: var(--text);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .stats-toggle-btn:hover,
+    .my-link-item.expanded .stats-toggle-btn {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .my-link-stats-panel {
+      margin-top: 0.85rem;
+      padding-top: 0.85rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .my-link-stats-panel[hidden] {
+      display: none;
+    }
+
+    .stats-panel-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+      margin-bottom: 0.85rem;
+    }
+
+    .stats-panel-stat {
+      padding: 0.55rem 0.7rem;
       border-radius: 6px;
       border: 1px solid var(--border);
       background: var(--surface);
     }
 
-    .my-link-stat-value {
+    .stats-panel-stat-value {
       display: block;
-      font-size: 0.95rem;
+      font-size: 1.1rem;
       font-weight: 700;
       color: var(--text);
       line-height: 1.2;
     }
 
-    .my-link-stat-label {
+    .stats-panel-stat-label {
       display: block;
       margin-top: 0.15rem;
       font-size: 0.68rem;
@@ -400,6 +450,102 @@
       letter-spacing: 0.04em;
       text-transform: uppercase;
       color: var(--muted);
+    }
+
+    .chart-block + .chart-block {
+      margin-top: 0.85rem;
+    }
+
+    .chart-head {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      margin-bottom: 0.45rem;
+    }
+
+    .chart-title {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .chart-hover-info {
+      min-height: 1.15rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+
+    .chart-hover-info.is-active {
+      color: var(--text);
+    }
+
+    .chart-hover-info strong {
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .chart-bars {
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+      height: 72px;
+      padding: 0.35rem 0.4rem 0;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      position: relative;
+    }
+
+    .chart-bar {
+      flex: 1;
+      min-width: 0;
+      background: linear-gradient(to top, rgba(247, 76, 0, 0.55), rgba(247, 76, 0, 0.35));
+      border-radius: 2px 2px 0 0;
+      min-height: 2px;
+      opacity: 0.72;
+      transition: height 0.25s ease, opacity 0.12s, transform 0.12s, background 0.12s;
+      cursor: crosshair;
+    }
+
+    .chart-bar.has-clicks {
+      background: linear-gradient(to top, var(--accent), var(--accent-hover));
+      opacity: 0.88;
+    }
+
+    .chart-bar:hover,
+    .chart-bar.is-active {
+      opacity: 1;
+      transform: scaleY(1.03);
+      transform-origin: bottom;
+    }
+
+    .chart-bar.is-active {
+      box-shadow: 0 0 0 1px rgba(247, 76, 0, 0.35);
+    }
+
+    .chart-bars-hour {
+      height: 88px;
+    }
+
+    .chart-bars-day {
+      height: 88px;
+      gap: 4px;
+    }
+
+    .stats-loading {
+      font-size: 0.8rem;
+      color: var(--muted);
+      min-height: 0;
+      margin: 0;
+      padding: 0;
+    }
+
+    .stats-loading:not([hidden]) {
+      min-height: 1.25rem;
+      padding: 0.35rem 0 0.15rem;
     }
 
     .my-links-list[hidden],
@@ -540,43 +686,310 @@
       saveMyLinks(links);
     }
 
-    function updateLinkStatsRow(item, stats) {
-      const clicksEl = item.querySelector('[data-stat="clicks"]');
-      const createdEl = item.querySelector('[data-stat="created"]');
-      if (clicksEl) clicksEl.textContent = stats.click_count ?? 0;
-      if (createdEl) createdEl.textContent = formatCreatedAt(stats.created_at);
-    }
-
     async function fetchLinkStats(url_short) {
       const response = await fetch("/stats/" + encodeURIComponent(url_short));
       if (!response.ok) return null;
       return response.json();
     }
 
-    async function refreshAllLinkStats() {
-      const items = myLinksList.querySelectorAll(".my-link-item[data-url-short]");
-      await Promise.all(
-        Array.from(items).map(async (item) => {
-          const url_short = item.dataset.urlShort;
-          try {
-            const stats = await fetchLinkStats(url_short);
-            if (!stats) return;
-            updateLinkStatsRow(item, stats);
-            updateStoredLinkStats(url_short, stats);
-          } catch (err) {
-            console.error("Failed to load stats for", url_short, err);
-          }
-        })
-      );
+    function formatChartTime(iso, mode) {
+      const date = new Date(iso);
+      if (Number.isNaN(date.getTime())) return "";
+      if (mode === "minute") {
+        return date.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+      }
+      if (mode === "hour") {
+        return date.toLocaleTimeString(undefined, { hour: "2-digit" });
+      }
+      return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
     }
 
-    let statsPollTimer = null;
+    function formatChartDetail(iso, mode) {
+      const date = new Date(iso);
+      if (Number.isNaN(date.getTime())) return "Unknown time";
 
-    function startStatsPolling() {
-      if (statsPollTimer) clearInterval(statsPollTimer);
-      statsPollTimer = setInterval(() => {
-        if (!myLinksList.hidden) refreshAllLinkStats();
+      if (mode === "minute") {
+        return date.toLocaleString(undefined, {
+          weekday: "short",
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      }
+
+      if (mode === "hour") {
+        const end = new Date(date.getTime() + 60 * 60 * 1000);
+        const startLabel = date.toLocaleString(undefined, {
+          weekday: "short",
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+        });
+        const endLabel = end.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+        return startLabel + " – " + endLabel;
+      }
+
+      return date.toLocaleDateString(undefined, {
+        weekday: "long",
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+    }
+
+    function formatPercent(value) {
+      if (!Number.isFinite(value) || value <= 0) return "0%";
+      if (value < 1) return "<1%";
+      return Math.round(value) + "%";
+    }
+
+    function clearChartHover(block) {
+      if (!block) return;
+      const info = block.querySelector("[data-chart-info]");
+      const bars = block.querySelectorAll(".chart-bar.is-active");
+      bars.forEach((bar) => bar.classList.remove("is-active"));
+      if (info) {
+        info.classList.remove("is-active");
+        info.textContent = "Hover a bar for details";
+      }
+    }
+
+    function showChartBarInfo(bar) {
+      const block = bar.closest(".chart-block");
+      if (!block) return;
+
+      block.querySelectorAll(".chart-bar.is-active").forEach((node) => {
+        node.classList.remove("is-active");
+      });
+
+      bar.classList.add("is-active");
+
+      const info = block.querySelector("[data-chart-info]");
+      if (!info) return;
+
+      const count = Number(bar.dataset.count || 0);
+      const pctMax = Number(bar.dataset.pctMax || 0);
+      const pctPeriod = Number(bar.dataset.pctPeriod || 0);
+      const when = bar.dataset.bucketLabel || "Unknown time";
+      const clickLabel = count === 1 ? "click" : "clicks";
+
+      info.classList.add("is-active");
+
+      if (count === 0) {
+        info.innerHTML = when + " · <strong>0 clicks</strong> in this period";
+        return;
+      }
+
+      info.innerHTML =
+        when +
+        " · <strong>" +
+        count +
+        " " +
+        clickLabel +
+        "</strong> · " +
+        formatPercent(pctMax) +
+        " of peak · " +
+        formatPercent(pctPeriod) +
+        " of chart total";
+    }
+
+    function buildBarMetrics(buckets) {
+      const max = Math.max(1, ...buckets.map((b) => b.count || 0));
+      const periodTotal = buckets.reduce((sum, bucket) => sum + (bucket.count || 0), 0);
+      return { max, periodTotal };
+    }
+
+    function applyBarMetrics(bar, bucket, mode, max, periodTotal) {
+      const count = bucket.count || 0;
+      const height = Math.max(2, Math.round((count / max) * 100));
+      const pctMax = (count / max) * 100;
+      const pctPeriod = periodTotal > 0 ? (count / periodTotal) * 100 : 0;
+      const detail = formatChartDetail(bucket.bucket, mode);
+
+      bar.style.height = height + "%";
+      bar.dataset.count = String(count);
+      bar.dataset.pctMax = String(pctMax);
+      bar.dataset.pctPeriod = String(pctPeriod);
+      bar.dataset.bucketLabel = detail;
+      bar.setAttribute("aria-label", detail + ": " + count + " clicks");
+      bar.classList.toggle("has-clicks", count > 0);
+    }
+
+    function renderBarChart(container, buckets, mode) {
+      if (!container || !Array.isArray(buckets) || buckets.length === 0) {
+        if (container) container.innerHTML = "";
+        return;
+      }
+
+      const { max, periodTotal } = buildBarMetrics(buckets);
+      container.dataset.chartMode = mode;
+
+      container.innerHTML = buckets
+        .map((bucket) => {
+          const count = bucket.count || 0;
+          const height = Math.max(2, Math.round((count / max) * 100));
+          const pctMax = (count / max) * 100;
+          const pctPeriod = periodTotal > 0 ? (count / periodTotal) * 100 : 0;
+          const classes = "chart-bar" + (count > 0 ? " has-clicks" : "");
+          const detail = formatChartDetail(bucket.bucket, mode);
+
+          return (
+            '<div class="' +
+            classes +
+            '" style="height:' +
+            height +
+            '%" data-count="' +
+            count +
+            '" data-pct-max="' +
+            pctMax +
+            '" data-pct-period="' +
+            pctPeriod +
+            '" data-bucket-label="' +
+            detail.replace(/"/g, "&quot;") +
+            '" aria-label="' +
+            detail.replace(/"/g, "&quot;") +
+            ": " +
+            count +
+            ' clicks"></div>'
+          );
+        })
+        .join("");
+    }
+
+    function updateBarChart(container, buckets, mode) {
+      if (!container || !Array.isArray(buckets) || buckets.length === 0) {
+        if (container) container.innerHTML = "";
+        return;
+      }
+
+      const bars = container.querySelectorAll(".chart-bar");
+      if (bars.length !== buckets.length) {
+        renderBarChart(container, buckets, mode);
+        return;
+      }
+
+      const { max, periodTotal } = buildBarMetrics(buckets);
+      container.dataset.chartMode = mode;
+      buckets.forEach((bucket, index) => {
+        applyBarMetrics(bars[index], bucket, mode, max, periodTotal);
+      });
+    }
+
+    function updateLinkSummary(item, stats, options) {
+      const silent = options && options.silent === true;
+      const summaryEl = item.querySelector("[data-summary-text]");
+      const totalEl = item.querySelector("[data-stat-total]");
+      const createdEl = item.querySelector("[data-stat-created-full]");
+
+      const clicks = stats.click_count ?? 0;
+      const created = formatCreatedAt(stats.created_at);
+
+      if (summaryEl) {
+        summaryEl.innerHTML =
+          "<strong>" + clicks + "</strong> clicks · <strong>" + created + "</strong>";
+      }
+      if (totalEl) totalEl.textContent = clicks;
+      if (createdEl) createdEl.textContent = created;
+
+      const chartUpdater = silent ? updateBarChart : renderBarChart;
+      chartUpdater(item.querySelector("[data-chart-minute]"), stats.clicks_per_minute, "minute");
+      chartUpdater(item.querySelector("[data-chart-hour]"), stats.clicks_per_hour, "hour");
+      chartUpdater(item.querySelector("[data-chart-day]"), stats.clicks_per_day, "day");
+
+      const activeBar = item.querySelector(".chart-bar.is-active");
+      if (activeBar) {
+        showChartBarInfo(activeBar);
+        return;
+      }
+
+      if (!silent) {
+        item.querySelectorAll("[data-chart-info]").forEach((el) => {
+          el.classList.remove("is-active");
+          el.textContent = "Hover a bar for details";
+        });
+      }
+    }
+
+    async function loadStatsForItem(item, options) {
+      const silent = options && options.silent === true;
+      const url_short = item.dataset.urlShort;
+      const loadingEl = item.querySelector("[data-stats-loading]");
+
+      if (loadingEl && !silent) loadingEl.hidden = false;
+
+      try {
+        const stats = await fetchLinkStats(url_short);
+        if (!stats) return;
+        updateLinkSummary(item, stats, { silent });
+        updateStoredLinkStats(url_short, stats);
+        item.dataset.statsLoaded = "true";
+      } catch (err) {
+        console.error("Failed to load stats for", url_short, err);
+      } finally {
+        if (loadingEl && !silent) loadingEl.hidden = true;
+      }
+    }
+
+    let expandedUrlShort = null;
+    let expandedPollTimer = null;
+
+    function stopExpandedPolling() {
+      if (expandedPollTimer) {
+        clearInterval(expandedPollTimer);
+        expandedPollTimer = null;
+      }
+    }
+
+    function startExpandedPolling(url_short) {
+      stopExpandedPolling();
+      expandedPollTimer = setInterval(() => {
+        const item = myLinksList.querySelector(
+          '.my-link-item[data-url-short="' + url_short + '"]'
+        );
+        if (item && item.classList.contains("expanded")) {
+          loadStatsForItem(item, { silent: true });
+        } else {
+          stopExpandedPolling();
+        }
       }, STATS_POLL_MS);
+    }
+
+    function collapseAllStatsPanels(exceptUrlShort) {
+      myLinksList.querySelectorAll(".my-link-item.expanded").forEach((item) => {
+        if (item.dataset.urlShort === exceptUrlShort) return;
+        item.classList.remove("expanded");
+        const panel = item.querySelector(".my-link-stats-panel");
+        const toggle = item.querySelector("[data-stats-toggle]");
+        if (panel) panel.hidden = true;
+        if (toggle) toggle.textContent = "Statistics";
+      });
+    }
+
+    function toggleStatsPanel(item) {
+      const url_short = item.dataset.urlShort;
+      const panel = item.querySelector(".my-link-stats-panel");
+      const toggle = item.querySelector("[data-stats-toggle]");
+      const isOpen = item.classList.contains("expanded");
+
+      if (isOpen) {
+        item.classList.remove("expanded");
+        panel.hidden = true;
+        toggle.textContent = "Statistics";
+        if (expandedUrlShort === url_short) {
+          expandedUrlShort = null;
+          stopExpandedPolling();
+        }
+        return;
+      }
+
+      collapseAllStatsPanels(url_short);
+      item.classList.add("expanded");
+      panel.hidden = false;
+      toggle.textContent = "Hide stats";
+      expandedUrlShort = url_short;
+      loadStatsForItem(item);
+      startExpandedPolling(url_short);
     }
 
     function upsertMyLink(entry) {
@@ -589,8 +1002,14 @@
         saved_at: new Date().toISOString(),
       });
       saveMyLinks(links);
+      const wasExpanded = expandedUrlShort;
       renderMyLinks();
-      refreshAllLinkStats();
+      if (wasExpanded) {
+        const item = myLinksList.querySelector(
+          '.my-link-item[data-url-short="' + wasExpanded + '"]'
+        );
+        if (item) toggleStatsPanel(item);
+      }
     }
 
     function renderMyLinks() {
@@ -626,14 +1045,43 @@
                   "</svg>" +
                 "</button>" +
               "</div>" +
-              '<div class="my-link-stats">' +
-                '<div class="my-link-stat">' +
-                  '<span class="my-link-stat-value" data-stat="clicks">' + (link.click_count ?? 0) + "</span>" +
-                  '<span class="my-link-stat-label">Clicks</span>' +
+              '<div class="my-link-summary">' +
+                '<span data-summary-text><strong>' + (link.click_count ?? 0) + "</strong> clicks · <strong>" +
+                  formatCreatedAt(link.created_at) + "</strong></span>" +
+                '<button type="button" class="stats-toggle-btn" data-stats-toggle>Statistics</button>' +
+              "</div>" +
+              '<div class="my-link-stats-panel" hidden>' +
+                '<p class="stats-loading" data-stats-loading hidden>Loading stats…</p>' +
+                '<div class="stats-panel-grid">' +
+                  '<div class="stats-panel-stat">' +
+                    '<span class="stats-panel-stat-value" data-stat-total>' + (link.click_count ?? 0) + "</span>" +
+                    '<span class="stats-panel-stat-label">Total clicks</span>' +
+                  "</div>" +
+                  '<div class="stats-panel-stat">' +
+                    '<span class="stats-panel-stat-value" data-stat-created-full>' + formatCreatedAt(link.created_at) + "</span>" +
+                    '<span class="stats-panel-stat-label">Created</span>' +
+                  "</div>" +
                 "</div>" +
-                '<div class="my-link-stat">' +
-                  '<span class="my-link-stat-value" data-stat="created">' + formatCreatedAt(link.created_at) + "</span>" +
-                  '<span class="my-link-stat-label">Created</span>' +
+                '<div class="chart-block">' +
+                  '<div class="chart-head">' +
+                    '<div class="chart-title">Last 60 minutes</div>' +
+                    '<div class="chart-hover-info" data-chart-info>Hover a bar for details</div>' +
+                  "</div>" +
+                  '<div class="chart-bars" data-chart-minute></div>' +
+                "</div>" +
+                '<div class="chart-block">' +
+                  '<div class="chart-head">' +
+                    '<div class="chart-title">Last 24 hours</div>' +
+                    '<div class="chart-hover-info" data-chart-info>Hover a bar for details</div>' +
+                  "</div>" +
+                  '<div class="chart-bars chart-bars-hour" data-chart-hour></div>' +
+                "</div>" +
+                '<div class="chart-block">' +
+                  '<div class="chart-head">' +
+                    '<div class="chart-title">Last 7 days</div>' +
+                    '<div class="chart-hover-info" data-chart-info>Hover a bar for details</div>' +
+                  "</div>" +
+                  '<div class="chart-bars chart-bars-day" data-chart-day></div>' +
                 "</div>" +
               "</div>" +
             "</li>"
@@ -728,19 +1176,45 @@
     });
 
     myLinksList.addEventListener("click", (event) => {
+      const statsToggle = event.target.closest("[data-stats-toggle]");
+      if (statsToggle) {
+        const item = statsToggle.closest(".my-link-item");
+        if (item) toggleStatsPanel(item);
+        return;
+      }
+
       const button = event.target.closest("[data-copy]");
       if (!button) return;
       copyText(button.dataset.copy, button);
     });
 
+    myLinksList.addEventListener("mouseover", (event) => {
+      const bar = event.target.closest(".chart-bar");
+      if (!bar || !myLinksList.contains(bar)) return;
+      showChartBarInfo(bar);
+    });
+
+    myLinksList.addEventListener("mouseout", (event) => {
+      const bar = event.target.closest(".chart-bar");
+      if (!bar || !myLinksList.contains(bar)) return;
+
+      const related = event.relatedTarget;
+      if (related && bar.contains(related)) return;
+
+      const block = bar.closest(".chart-block");
+      if (block && related && block.contains(related) && related.closest(".chart-bar")) return;
+
+      clearChartHover(block);
+    });
+
     clearLinksBtn.addEventListener("click", () => {
       localStorage.removeItem(STORAGE_KEY);
+      expandedUrlShort = null;
+      stopExpandedPolling();
       renderMyLinks();
     });
 
     renderMyLinks();
-    refreshAllLinkStats();
-    startStatsPolling();
   </script>
 </body>
 </html>

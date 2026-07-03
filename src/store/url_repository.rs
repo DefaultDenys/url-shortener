@@ -4,7 +4,6 @@ use sea_orm::{
 };
 
 use crate::entities::url::{self, Entity as UrlEntity, Model as UrlModel};
-
 #[derive(Clone)]
 pub struct UrlRepository {
     db: DatabaseConnection,

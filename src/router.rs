@@ -11,6 +11,7 @@ pub fn build_router(state: AppState) -> Router {
         .route("/", get(handlers::index_handler))
         .route("/health", get(handlers::health_check_handler))
         .route("/shorten", post(handlers::shorten_handler))
+        .route("/stats/{url_short}", get(handlers::stats_handler))
         .route("/{url_short}", get(handlers::redirect_handler))
         .layer(TraceLayer::new_for_http())
         .with_state(state)
