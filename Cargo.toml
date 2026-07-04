@@ -18,6 +18,7 @@ chrono = "0.4.45"
 migration = { path = "migration" }
 tower_governor = { version = "0.8.0", features = ["axum", "tracing"] }
 governor = "0.10.4"
+url = "2.5.8"
 
 [workspace]
 members = [".", "migration"]
