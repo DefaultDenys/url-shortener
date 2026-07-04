@@ -1,6 +1,7 @@
 mod dto;
 mod entities;
 mod handlers;
+mod rate_limit;
 mod router;
 mod services;
 mod state;
@@ -43,7 +44,12 @@ async fn main() {
     info!(%addr, "server listening");
 
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
-    axum::serve(listener, app).await.unwrap();
+    axum::serve(
+        listener,
+        app.into_make_service_with_connect_info::<SocketAddr>(),
+    )
+    .await
+    .unwrap();
 }
 
 fn database_url() -> String {

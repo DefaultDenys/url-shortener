@@ -16,6 +16,8 @@ uuid = {version = "1", features = ["v4"]}
 sea-orm = { version = "1", features = ["sqlx-sqlite", "runtime-tokio-rustls", "macros"] }
 chrono = "0.4.45"
 migration = { path = "migration" }
+tower_governor = { version = "0.8.0", features = ["axum", "tracing"] }
+governor = "0.10.4"
 
 [workspace]
 members = [".", "migration"]
