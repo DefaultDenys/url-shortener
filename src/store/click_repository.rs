@@ -28,7 +28,7 @@ impl ClickRepository {
     pub async fn insert(&self, url_short: String) -> Result<ClickModel, DbErr> {
         let click_model = ClickActiveModel {
             url_short: Set(url_short),
-            clicked_at: Set(Utc::now().into()),
+            clicked_at: Set(Utc::now().to_rfc3339()),
             ..Default::default()
         };
 
@@ -42,7 +42,7 @@ impl ClickRepository {
     ) -> Result<Vec<ClickModel>, DbErr> {
         ClickEntity::find()
             .filter(Column::UrlShort.eq(url_short))
-            .filter(Column::ClickedAt.gte(since))
+            .filter(Column::ClickedAt.gte(since.to_rfc3339()))
             .order_by_asc(Column::ClickedAt)
             .all(&self.db)
             .await

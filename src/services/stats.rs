@@ -2,6 +2,12 @@ use chrono::{DateTime, Duration, Timelike, Utc};
 
 use crate::{dto::TimeBucket, entities::click::Model as ClickModel};
 
+fn click_datetime(click: &ClickModel) -> Option<DateTime<Utc>> {
+    DateTime::parse_from_rfc3339(&click.clicked_at)
+        .ok()
+        .map(|dt| dt.with_timezone(&Utc))
+}
+
 pub fn truncate_to_minute(dt: DateTime<Utc>) -> DateTime<Utc> {
     dt.with_second(0).unwrap().with_nanosecond(0).unwrap()
 }
@@ -35,7 +41,9 @@ where
 {
     let mut counts = std::collections::HashMap::new();
     for click in clicks {
-        let dt: DateTime<Utc> = click.clicked_at.into();
+        let Some(dt) = click_datetime(click) else {
+            continue;
+        };
         let bucket = truncate(dt);
         *counts.entry(bucket).or_insert(0) += 1;
     }

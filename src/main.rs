@@ -7,7 +7,7 @@ mod state;
 mod store;
 mod tracing_config;
 
-use std::{env, net::SocketAddr};
+use std::{env, net::SocketAddr, path::Path};
 
 use migration::{Migrator, MigratorTrait};
 use state::AppState;
@@ -20,11 +20,12 @@ async fn main() {
     tracing_config::init_tracing();
 
     let database_url = database_url();
+    ensure_sqlite_parent_dir(&database_url);
     info!("connecting to database");
 
     let db = store::connect(&database_url)
         .await
-        .expect("failed to connect to database — check DATABASE_URL and that PostgreSQL is linked");
+        .expect("failed to connect to database — check DATABASE_URL");
 
     Migrator::up(&db, None)
         .await
@@ -46,20 +47,28 @@ async fn main() {
 }
 
 fn database_url() -> String {
-    let url = env::var("DATABASE_URL")
-        .or_else(|_| env::var("DATABASE_PRIVATE_URL"))
-        .expect(
-            "DATABASE_URL must be set — on Railway: add PostgreSQL and link it to this service",
-        );
+    env::var("DATABASE_URL").unwrap_or_else(|_| "sqlite://data.db?mode=rwc".to_owned())
+}
 
-    // Railway public Postgres proxy requires TLS with rustls
-    if url.contains("rlwy.net") && !url.contains("sslmode=") {
-        if url.contains('?') {
-            format!("{url}&sslmode=require")
-        } else {
-            format!("{url}?sslmode=require")
+fn ensure_sqlite_parent_dir(database_url: &str) {
+    if !database_url.starts_with("sqlite:") {
+        return;
+    }
+
+    let path_part = database_url
+        .trim_start_matches("sqlite://")
+        .trim_start_matches("sqlite:")
+        .split('?')
+        .next()
+        .unwrap_or("");
+
+    if path_part.is_empty() {
+        return;
+    }
+
+    if let Some(parent) = Path::new(path_part).parent() {
+        if !parent.as_os_str().is_empty() {
+            std::fs::create_dir_all(parent).expect("failed to create SQLite directory");
         }
-    } else {
-        url
     }
 }

@@ -13,7 +13,7 @@ impl MigrationTrait for Migration {
                     .if_not_exists()
                     .col(pk_auto(Clicks::Id))
                     .col(string(Clicks::UrlShort).not_null())
-                    .col(timestamp_with_time_zone(Clicks::ClickedAt).not_null())
+                    .col(string(Clicks::ClickedAt).not_null())
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk_clicks_url_short")
