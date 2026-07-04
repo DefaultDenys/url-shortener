@@ -1289,7 +1289,10 @@
         });
 
         if (!response.ok) {
-          throw new Error("Server returned " + response.status);
+          const errBody = await response.json().catch(() => null);
+          throw new Error(
+            (errBody && errBody.error) ? errBody.error : "Server returned " + response.status
+          );
         }
 
         const data = await response.json();
@@ -1311,7 +1314,7 @@
 
         resultBox.classList.add("visible");
       } catch (err) {
-        showError("Could not shorten URL. Please try again.");
+        showError(err.message || "Could not shorten URL. Please try again.");
         console.error(err);
       } finally {
         submitBtn.disabled = false;
