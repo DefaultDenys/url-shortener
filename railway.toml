@@ -6,3 +6,6 @@ dockerfilePath = "Dockerfile"
 healthcheckPath = "/health"
 healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"
+
+# Mount a volume at /data in the Railway dashboard, then set:
+# DATABASE_URL=sqlite:///data/url_shortener.db?mode=rwc

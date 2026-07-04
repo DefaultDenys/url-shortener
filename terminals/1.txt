@@ -1,0 +1,18 @@
+---
+pid: 35100
+cwd: "F:\Coding\Rust\url-shortener"
+command: "Set-Location F:\\Coding\\Rust\\url-shortener; $env:DATABASE_URL=\"sqlite://data.db?mode=rwc\"; cargo run 2>&1 | Select-Object -First 8"
+started_at: 2026-07-04T10:54:36.523Z
+running_for_ms: 30002    
+---
+cargo :     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.36s
+2026-07-04T10:54:37.266663Z  INFO url_shortener: connecting to databaseAt line:1 char:91
++ ... $env:DATABASE_URL="sqlite://data.db?mode=rwc"; cargo run 2>&1 | Selec ...
++                                                    ~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (    Finished `d...get(s) in 0.36s:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+     Running `target\debug\url-shortener.exe`
+
+2026-07-04T10:54:38.051860Z  INFO url_shortener: server listening addr=0.0.0.0:3000
+error: process didn't exit successfully: `target\debug\url-shortener.exe` (exit code: 0xffffffff)

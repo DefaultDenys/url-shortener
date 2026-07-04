@@ -8,7 +8,7 @@ pub struct Model {
 
     pub url_short: String,
 
-    pub clicked_at: DateTimeWithTimeZone,
+    pub clicked_at: String,
 
 }
 
